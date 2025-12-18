@@ -16,7 +16,7 @@ Kubernetes namespace'lerini otomatik olarak izleyen ve `apm-observe=true` etiket
 
 ```bash
 kubectl create namespace auto-observe
-helm install auto-ns charts/auto-ns-opentelemetry-instrumentation --namespace auto-observe
+helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation --namespace auto-observe
 ```
 
 #### 2. Namespace'i Etikitle
@@ -64,14 +64,14 @@ ignoreNamespaces:
 
 ```bash
 GOOS=linux GOARCH=amd64 go build -o operator-amd64 ./
-docker build -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns:0.0.1 .
-docker push ghcr.io/<user>/auto-ns:0.0.1
+docker build -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1 .
+docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1
 ```
 
 #### Helm Upgrade
 
 ```bash
-helm upgrade --install auto-ns charts/auto-ns-opentelemetry-instrumentation \
+helm upgrade --install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
   --namespace auto-observe \
   --set image.tag=0.0.1
 ```
@@ -98,7 +98,7 @@ A Kubernetes operator that automatically watches namespaces and applies OpenTele
 
 ```bash
 kubectl create namespace auto-observe
-helm install auto-ns charts/auto-ns-opentelemetry-instrumentation --namespace auto-observe
+helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation --namespace auto-observe
 ```
 
 #### 2. Label Namespace
@@ -146,14 +146,14 @@ ignoreNamespaces:
 
 ```bash
 GOOS=linux GOARCH=amd64 go build -o operator-amd64 ./
-docker build -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns:0.0.1 .
-docker push ghcr.io/<user>/auto-ns:0.0.1
+docker build -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1 .
+docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1
 ```
 
 #### Helm Upgrade
 
 ```bash
-helm upgrade --install auto-ns charts/auto-ns-opentelemetry-instrumentation \
+helm upgrade --install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
   --namespace auto-observe \
   --set image.tag=0.0.1
 ```
