@@ -241,6 +241,72 @@ docker build -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns-opentelemetry-instrum
 docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1
 ```
 
+#### Multi-arch image build
+
+If you need images that can be pulled on both amd64 and arm64 clusters, build a multi-architecture manifest using `docker buildx` (recommended) or publish per-arch tags and combine them.
+
+Quick `buildx` example (creates a manifest list and pushes to GHCR):
+
+```bash
+# create a builder (only once)
+docker buildx create --name mybuilder --use || docker buildx inspect --bootstrap
+
+# build and push for amd64+arm64
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -f Dockerfile.amd64 \
+  -t ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4 \
+  --push .
+```
+
+Alternate: tag and push per-arch images, then create a manifest list:
+
+```bash
+# push arm64 variant (if already available)
+docker tag ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.2 ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4-arm64
+docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4-arm64
+
+# build and push amd64 variant
+docker buildx build --platform linux/amd64 -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4-amd64 --push .
+
+# combine into one multi-arch tag
+docker buildx imagetools create --tag ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4 \
+  ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4-amd64 \
+  ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4-arm64
+```
+
+GitHub Actions example (minimal):
+
+```yaml
+name: Build and push multi-arch image
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4
+```
+
+
 #### Helm Upgrade
 
 ```bash
