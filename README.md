@@ -4,6 +4,151 @@
 
 ---
 
+## Quick overview
+
+This repository contains a small Kubernetes operator that applies OpenTelemetry Instrumentation resources into namespaces labeled with `apm-observe=true`. It also includes a Helm chart and example values to install the operator and the instrumentation config.
+
+This README provides a concise, production-oriented Quick Start for installing the monitoring stack and then deploying the operator. Follow the order below.
+
+Order of installation:
+- Cert-Manager
+- OpenTelemetry Operator
+- SigNoz stack
+- auto-ns-opentelemetry-instrumentation
+
+---
+
+## Türkçe
+
+Kısa: Kurulum adımları gerektiği sırada ve doğrulama komutlarıyla aşağıdadır.
+
+Önkoşullar
+- `kubectl`, `helm` yüklü ve cluster erişiminiz var.
+
+1) Cert-Manager
+
+```bash
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+kubectl -n cert-manager get pods
+```
+
+2) OpenTelemetry Operator
+
+```bash
+helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm repo update
+helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+  --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
+  --namespace opentelemetry-operator-system --create-namespace
+kubectl -n opentelemetry-operator-system get pods
+```
+
+3) SigNoz stack (platform namespace)
+
+Edit: repository içinde `signoz/signoz-values.yaml` dosyasını ihtiyaçlarınıza göre düzenleyin (endpoints, storage, secrets).
+
+```bash
+kubectl create namespace platform
+helm repo add signoz https://charts.signoz.io || true
+helm repo update
+helm install dmsignoz signoz/signoz -n platform -f signoz/signoz-values.yaml
+kubectl -n platform get pods
+```
+
+4) auto-ns-opentelemetry-instrumentation (operator)
+
+Chart ve config repo içindedir. Operator image parametresini `values.yaml` içinde kontrol edin.
+
+```bash
+helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
+  --namespace auto-observe --create-namespace --set image.tag=0.0.1
+
+# Label a test namespace to trigger instrumentation
+kubectl create namespace my-app
+kubectl label namespace my-app apm-observe=true
+kubectl -n my-app get instrumentation
+```
+
+Doğrulama
+
+```bash
+kubectl -n auto-observe get pods
+kubectl -n platform get pods
+kubectl -n opentelemetry-operator-system get pods
+```
+
+Notlar
+- `signoz/signoz-values.yaml` dosyasını root içindeki `signoz/` klasöründe bulabilirsiniz.
+- Eğer özel registry, TLS, veya storage ayarları gerekiyorsa values dosyasını düzenleyin.
+
+---
+
+## English
+
+Concise Quick Start for production-like installation. Follow the steps in order.
+
+Prerequisites
+- `kubectl` and `helm` configured for your cluster.
+
+1) Install Cert-Manager
+
+```bash
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+kubectl -n cert-manager get pods
+```
+
+2) Install OpenTelemetry Operator
+
+```bash
+helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm repo update
+helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+  --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
+  --namespace opentelemetry-operator-system --create-namespace
+kubectl -n opentelemetry-operator-system get pods
+```
+
+3) Install SigNoz (platform namespace)
+
+Edit the values file located at `signoz/signoz-values.yaml` in this repository to set endpoints, storage and credentials.
+
+```bash
+kubectl create namespace platform
+helm repo add signoz https://charts.signoz.io || true
+helm repo update
+helm install dmsignoz signoz/signoz -n platform -f signoz/signoz-values.yaml
+kubectl -n platform get pods
+```
+
+4) Install auto-ns-opentelemetry-instrumentation operator
+
+```bash
+helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
+  --namespace auto-observe --create-namespace --set image.tag=0.0.1
+
+# Label a namespace to apply instrumentation
+kubectl create namespace my-app
+kubectl label namespace my-app apm-observe=true
+kubectl -n my-app get instrumentation
+```
+
+Verification
+
+```bash
+kubectl -n auto-observe get pods
+kubectl -n platform get pods
+kubectl -n opentelemetry-operator-system get pods
+```
+
+Notes
+- The SigNoz values file is `signoz/signoz-values.yaml`. Update it before install if you use custom endpoints, storage backends or secrets.
+- Keep chart and image versions in sync (bump `Chart.yaml` and `values.yaml` when releasing new operator versions).
+# auto-ns-opentelemetry-instrumentation
+
+**[English](#english) | [Türkçe](#türkçe)**
+
+---
+
 ## Türkçe
 
 ### Nedir?
