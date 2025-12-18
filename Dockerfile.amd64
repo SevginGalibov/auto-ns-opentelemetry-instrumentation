@@ -1,6 +1,0 @@
-FROM alpine:3.18
-RUN apk add --no-cache ca-certificates
-COPY operator-amd64 /usr/local/bin/operator
-RUN mkdir -p /etc/instrumentation
-WORKDIR /
-ENTRYPOINT ["/usr/local/bin/operator"]
