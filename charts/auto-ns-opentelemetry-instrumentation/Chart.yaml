@@ -6,8 +6,9 @@ version: 0.1.0
 appVersion: "0.1.0"
 home: https://github.com/SevginGalibov/auto-ns-opentelemetry-instrumentation
 sources:
-	- https://github.com/SevginGalibov/auto-ns-opentelemetry-instrumentation
+
+  - https://github.com/SevginGalibov/auto-ns-opentelemetry-instrumentation
 maintainers:
-	- name: SevginGalibov
-		email: sevgin@example.com
+  - name: SevginGalibov
+    email: sevgin@example.com
 
