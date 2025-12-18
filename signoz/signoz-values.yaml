@@ -1,0 +1,96 @@
+global:
+  storageClass: "longhorn"
+clickhouse:
+  enabled: true
+  installCustomStorageClass: false
+  persistence:
+    enabled: true
+    storageClass: "longhorn"
+    size: 50Gi  # Increased for better trace retention in production
+  extraEnv:
+    - name: CLICKHOUSE_TRACE_RETENTION_PERIOD
+      value: "15d"
+  resources:
+    requests:
+      cpu: 1
+      memory: 4Gi
+    limits:
+      cpu: 2
+      memory: 8Gi
+queryService:
+  replicaCount: 2  # Add redundancy for high availability
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+    limits:
+      cpu: 2
+      memory: 2Gi
+frontend:
+  replicaCount: 2
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+otelCollector:
+  mode: deployment
+  replicaCount: 3  # For better ingestion throughput from apps
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 2Gi
+otelCollectorMetrics:
+  enabled: false  # Still off unless you are scraping Prometheus endpoints
+ingest:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 2Gi
+signozCollector:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+alertmanager:
+  enabled: true
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+ruleEvaluator:
+  enabled: true
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+anomalyDetector:
+  enabled: true
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+usageStats:
+  enabled: true
