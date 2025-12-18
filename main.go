@@ -10,6 +10,12 @@ import (
     "k8s.io/apimachinery/pkg/runtime"
     utilruntime "k8s.io/apimachinery/pkg/util/runtime"
     clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+    "k8s.io/client-go/discovery"
+    "k8s.io/client-go/discovery/cached/memory"
+    "k8s.io/client-go/restmapper"
+    "k8s.io/client-go/rest"
+    "k8s.io/apimachinery/pkg/api/meta"
+    "net/http"
     ctrl "sigs.k8s.io/controller-runtime"
     "sigs.k8s.io/controller-runtime/pkg/log/zap"
 
@@ -34,11 +40,20 @@ func main() {
 
     ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
+    // Use a deferred discovery RESTMapper with an in-memory cached discovery
+    // client to make discovery more tolerant to missing API groups (e.g. meta.k8s.io).
     mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
         Scheme:             scheme,
         MetricsBindAddress: metricsAddr,
         LeaderElection:     enableLeaderElection,
         LeaderElectionID:   "auto-ns-opentelemetry-instrumentation",
+        MapperProvider: func(cfg *rest.Config, _ *http.Client) (meta.RESTMapper, error) {
+            dc, err := discovery.NewDiscoveryClientForConfig(cfg)
+            if err != nil {
+                return nil, err
+            }
+            return restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc)), nil
+        },
     })
     if err != nil {
         ctrl.Log.Error(err, "unable to start manager")
