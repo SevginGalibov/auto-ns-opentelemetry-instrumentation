@@ -1,0 +1,22 @@
+# Binaries
+operator-amd64
+operator
+
+# OS
+.DS_Store
+
+# Dependency directories
+vendor/
+
+# IDE
+.vscode/
+.idea/
+
+# Env files
+.env
+
+# macOS
+.AppleDouble
+
+# Logs
+*.log
