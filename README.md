@@ -59,15 +59,28 @@ kubectl -n platform get pods
 
 Chart ve config repo içindedir. Operator image parametresini `values.yaml` içinde kontrol edin.
 
+Not: iki kurulum seçeneği vardır — (A) yerel chart dizininden doğrudan kurulum (geliştirme/test) ve (B) yayınlanmış Helm repo (gh-pages) üzerinden kurulum (kullanıcılar için kolay, production).
+
+A) Yerel chart (mevcut repo içindeki `charts/` dizininden):
+
 ```bash
 helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
   --namespace auto-observe --create-namespace --set image.tag=0.0.1
+```
+
+B) Yayınlanmış Helm repo üzerinden (ör. GitHub Pages `gh-pages` kullanıyorsanız):
+
+```bash
+helm repo add sevgingalibov https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/
+helm repo update
+helm install auto-ns-opentelemetry-instrumentation sevgingalibov/auto-ns-opentelemetry-instrumentation \
+  --namespace auto-observe --create-namespace --set image.tag=0.0.1
+```
 
 # Label a test namespace to trigger instrumentation
 kubectl create namespace my-app
 kubectl label namespace my-app apm-observe=true
 kubectl -n my-app get instrumentation
-```
 
 Doğrulama
 
@@ -122,15 +135,30 @@ kubectl -n platform get pods
 
 4) Install auto-ns-opentelemetry-instrumentation operator
 
+The chart and configuration are included in this repo. Verify operator image settings in the chart `values.yaml`.
+
+Note: there are two installation options — (A) local chart (development/testing) and (B) installed from a published Helm repository (recommended for consumers).
+
+A) Local chart (install from the `charts/` directory in this repository):
+
 ```bash
 helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
   --namespace auto-observe --create-namespace --set image.tag=0.0.1
+```
+
+B) From published Helm repo (e.g. GitHub Pages `gh-pages`):
+
+```bash
+helm repo add sevgingalibov https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/
+helm repo update
+helm install auto-ns-opentelemetry-instrumentation sevgingalibov/auto-ns-opentelemetry-instrumentation \
+  --namespace auto-observe --create-namespace --set image.tag=0.0.1
+```
 
 # Label a namespace to apply instrumentation
 kubectl create namespace my-app
 kubectl label namespace my-app apm-observe=true
 kubectl -n my-app get instrumentation
-```
 
 Verification
 
