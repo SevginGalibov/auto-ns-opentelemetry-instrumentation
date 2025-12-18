@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auto-ns-opentelemetry-instrumentation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auto-ns-opentelemetry-instrumentation
+  template:
+    metadata:
+      labels:
+        app: auto-ns-opentelemetry-instrumentation
+    spec:
+      serviceAccountName: auto-ns-opentelemetry-instrumentation
+      containers:
+        - name: operator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: INSTR_PATH
+              value: /etc/instrumentation/instrumentation.yaml
+            - name: IGNORE_NAMESPACES
+              value: "{{ join "," .Values.ignoreNamespaces }}"
+          volumeMounts:
+            - name: instr
+              mountPath: /etc/instrumentation
+      volumes:
+        - name: instr
+          configMap:
+            name: auto-ns-opentelemetry-instrumentation-config

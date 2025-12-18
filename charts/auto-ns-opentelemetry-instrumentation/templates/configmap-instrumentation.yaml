@@ -1,0 +1,53 @@
+{{- $root := .Values.instrumentation -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auto-ns-opentelemetry-instrumentation-config
+data:
+  instrumentation.yaml: |-
+    apiVersion: opentelemetry.io/v1alpha1
+    kind: Instrumentation
+    metadata:
+      name: dm-instrumentation
+    spec:
+      exporter:
+        endpoint: {{ $root.exporter.endpoint | quote }}
+      propagators:
+{{- range $p := $root.propagators }}
+        - {{ $p }}
+{{- end }}
+      sampler:
+        type: {{ $root.sampler.type }}
+      env:
+{{- range $e := $root.env }}
+        - name: {{ $e.name }}
+          value: {{ $e.value | quote }}
+{{- end }}
+
+      java:
+        env:
+{{- range $e := $root.java.env }}
+        - name: {{ $e.name }}
+          value: {{ $e.value | quote }}
+{{- end }}
+
+      dotnet:
+        env:
+{{- range $e := $root.dotnet.env }}
+        - name: {{ $e.name }}
+          value: {{ $e.value | quote }}
+{{- end }}
+
+      python:
+        env:
+{{- range $e := $root.python.env }}
+        - name: {{ $e.name }}
+          value: {{ $e.value | quote }}
+{{- end }}
+
+      nodejs:
+        env:
+{{- range $e := $root.nodejs.env }}
+        - name: {{ $e.name }}
+          value: {{ $e.value | quote }}
+{{- end }}
