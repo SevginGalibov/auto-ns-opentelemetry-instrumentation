@@ -1,552 +1,172 @@
-# auto-ns-opentelemetry-instrumentation
+# Auto Namespace OpenTelemetry Instrumentation
 
-**[English](#english) | [Türkçe](#türkçe)**
+A lightweight Kubernetes operator that automates the injection of OpenTelemetry Instrumentation resources. It watches for namespaces labeled with `apm-observe=true` and applies the necessary configuration to enable monitoring without manual intervention.
 
----
+## 🚀 Quick Overview
 
-## Quick overview
-
-This repository contains a small Kubernetes operator that applies OpenTelemetry Instrumentation resources into namespaces labeled with `apm-observe=true`. It also includes a Helm chart and example values to install the operator and the instrumentation config.
-
-This README provides a concise, production-oriented Quick Start for installing the monitoring stack and then deploying the operator. Follow the order below.
-
-Order of installation:
-- Cert-Manager
-- OpenTelemetry Operator
-- SigNoz stack
-- auto-ns-opentelemetry-instrumentation
+- **What it does:** Automatically creates `Instrumentation` resources in specific namespaces.
+- **Trigger:** Namespaces labeled with `apm-observe=true`.
+- **Stack:** Designed to work with the OpenTelemetry Operator and SigNoz (or any OTLP backend).
 
 ---
 
-## Türkçe
+## 🛠 Prerequisites & Dependencies
 
-Kısa: Kurulum adımları gerektiği sırada ve doğrulama komutlarıyla aşağıdadır.
+Before installing the operator, ensure your cluster has the necessary monitoring stack dependencies. Follow this order:
 
-Önkoşullar
-- `kubectl`, `helm` yüklü ve cluster erişiminiz var.
-
-1) Cert-Manager
+### 1. Install Cert-Manager
+Required for the OpenTelemetry Operator.
 
 ```bash
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
-kubectl -n cert-manager get pods
+kubectl apply -f [https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml](https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml)
 ```
 
-2) OpenTelemetry Operator
+### 2. Install OpenTelemetry Operator
 
 ```bash
-helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+helm repo add open-telemetry [https://open-telemetry.github.io/opentelemetry-helm-charts](https://open-telemetry.github.io/opentelemetry-helm-charts)
 helm repo update
+
 helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
   --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
-  --namespace opentelemetry-operator-system --create-namespace
-kubectl -n opentelemetry-operator-system get pods
+  --namespace opentelemetry-operator-system \
+  --create-namespace
 ```
 
-3) SigNoz stack (platform namespace)
+### 3. Install SigNoz (Backend)
 
-Edit: repository içinde `signoz/signoz-values.yaml` dosyasını ihtiyaçlarınıza göre düzenleyin (endpoints, storage, secrets).
+*Note: This repository includes a custom values file at `signoz/signoz-values.yaml`. Please edit this file to configure your storage or credentials before running the commands below.*
 
 ```bash
 kubectl create namespace platform
-helm repo add signoz https://charts.signoz.io || true
+helm repo add signoz [https://charts.signoz.io](https://charts.signoz.io) || true
 helm repo update
+
+# Install using the custom values file included in this repo
 helm install dmsignoz signoz/signoz -n platform -f signoz/signoz-values.yaml
-kubectl -n platform get pods
 ```
-
-4) auto-ns-opentelemetry-instrumentation (operator)
-
-Chart ve config repo içindedir. Operator image parametresini `values.yaml` içinde kontrol edin.
-
-Not: iki kurulum seçeneği vardır — (A) yerel chart dizininden doğrudan kurulum (geliştirme/test) ve (B) yayınlanmış Helm repo (gh-pages) üzerinden kurulum (kullanıcılar için kolay, production).
-
-A) Yerel chart (mevcut repo içindeki `charts/` dizininden):
-
-```bash
-helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe --create-namespace --set image.tag=0.0.4
-```
-
-B) Yayınlanmış Helm repo üzerinden (ör. GitHub Pages `gh-pages` kullanıyorsanız):
-
-```bash
-helm repo add sevgingalibov https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/
-helm repo update
-helm install auto-ns-opentelemetry-instrumentation sevgingalibov/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe --create-namespace --set image.tag=0.0.4
-```
-
-# Label a test namespace to trigger instrumentation
-kubectl create namespace my-app
-kubectl label namespace my-app apm-observe=true
-kubectl -n my-app get instrumentation
-
-Doğrulama
-
-```bash
-kubectl -n auto-observe get pods
-kubectl -n platform get pods
-kubectl -n opentelemetry-operator-system get pods
-```
-
-Notlar
-- `signoz/signoz-values.yaml` dosyasını root içindeki `signoz/` klasöründe bulabilirsiniz.
-- Eğer özel registry, TLS, veya storage ayarları gerekiyorsa values dosyasını düzenleyin.
 
 ---
 
-## English
+## 📦 Installation
 
-Concise Quick Start for production-like installation. Follow the steps in order.
+You can install the auto-instrumentation operator via the Helm repository (recommended) or from the local source.
 
-Prerequisites
-- `kubectl` and `helm` configured for your cluster.
-
-1) Install Cert-Manager
-
-```bash
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
-kubectl -n cert-manager get pods
-```
-
-2) Install OpenTelemetry Operator
-
-```bash
-helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-helm repo update
-helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
-  --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
-  --namespace opentelemetry-operator-system --create-namespace
-kubectl -n opentelemetry-operator-system get pods
-```
-
-3) Install SigNoz (platform namespace)
-
-Edit the values file located at `signoz/signoz-values.yaml` in this repository to set endpoints, storage and credentials.
-
-```bash
-kubectl create namespace platform
-helm repo add signoz https://charts.signoz.io || true
-helm repo update
-helm install dmsignoz signoz/signoz -n platform -f signoz/signoz-values.yaml
-kubectl -n platform get pods
-```
-
-4) Install auto-ns-opentelemetry-instrumentation operator
-
-The chart and configuration are included in this repo. Verify operator image settings in the chart `values.yaml`.
-
-Note: there are two installation options — (A) local chart (development/testing) and (B) installed from a published Helm repository (recommended for consumers).
-
-A) Local chart (install from the `charts/` directory in this repository):
-
-```bash
-helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe --create-namespace --set image.tag=0.0.4
-```
-
-B) From published Helm repo (e.g. GitHub Pages `gh-pages`):
-
-```bash
-helm repo add sevgingalibov https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/
-helm repo update
-helm install auto-ns-opentelemetry-instrumentation sevgingalibov/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe --create-namespace --set image.tag=0.0.4
-```
-
-# Label a namespace to apply instrumentation
-kubectl create namespace my-app
-kubectl label namespace my-app apm-observe=true
-kubectl -n my-app get instrumentation
-
-Verification
-
-```bash
-kubectl -n auto-observe get pods
-kubectl -n platform get pods
-kubectl -n opentelemetry-operator-system get pods
-```
-
-Notes
-- The SigNoz values file is `signoz/signoz-values.yaml`. Update it before install if you use custom endpoints, storage backends or secrets.
-- Keep chart and image versions in sync (bump `Chart.yaml` and `values.yaml` when releasing new operator versions).
-# auto-ns-opentelemetry-instrumentation
-
-**[English](#english) | [Türkçe](#türkçe)**
-
----
-
-## Türkçe
-
-### Nedir?
-
-Kubernetes namespace'lerini otomatik olarak izleyen ve `apm-observe=true` etiketine sahip namespace'lere OpenTelemetry Instrumentation kaynağını uygulayan bir operatördür.
-
-### Kullanım
-
-#### 1. Kurulum
+### Option A: From Helm Repository (Recommended)
 
 ```bash
 kubectl create namespace auto-observe
-helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation --namespace auto-observe
+helm repo add sevgingalibov [https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/](https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/)
+helm repo update
+
+helm install auto-ns-opentelemetry-instrumentation sevgingalibov/auto-ns-opentelemetry-instrumentation \
+  --namespace auto-observe \
+  --create-namespace \
+  --set image.tag=0.0.4
 ```
 
-#### 2. Namespace'i Etikitle
+### Option B: Local Development Chart
+
+```bash
+kubectl create namespace auto-observe
+helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
+  --namespace auto-observe \
+  --set image.tag=0.0.4
+```
+
+---
+
+## 💡 Usage
+
+Once the operator is running, you only need to label a namespace to enable auto-instrumentation.
+
+### 1. Label a Namespace
+Create your application namespace and add the `apm-observe=true` label:
 
 ```bash
 kubectl create namespace my-app
 kubectl label namespace my-app apm-observe=true
 ```
 
-Instrumentation otomatik olarak uygulanacaktır:
+### 2. Verify Injection
+The operator will automatically detect the label and create the resource:
 
 ```bash
-kubectl get instrumentation -n my-app
+kubectl -n my-app get instrumentation
 ```
 
-### Konfigürasyon
+---
 
-Instrumentation'ın env değerlerini `charts/auto-ns-opentelemetry-instrumentation/values.yaml` dosyasında düzenle:
+## ⚙️ Configuration
+
+You can customize the instrumentation settings (e.g., OTLP endpoints or ignored namespaces) by editing the `values.yaml` file in the Helm chart.
+
+**Example `values.yaml` snippet:**
 
 ```yaml
 instrumentation:
   exporter:
-    endpoint: "http://collector.svc:4318"
+    endpoint: "[http://dmsignoz-otel-collector.platform.svc:4318](http://dmsignoz-otel-collector.platform.svc:4318)"
   env:
     - name: OTEL_LOGS_EXPORTER
       value: "otlp"
   java:
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: "http://collector.svc:4318"
-```
+        value: "[http://dmsignoz-otel-collector.platform.svc:4318](http://dmsignoz-otel-collector.platform.svc:4318)"
 
-Yoksayılacak namespace'leri ayarla:
-
-```yaml
+# Namespaces to explicitly ignore (even if labeled)
 ignoreNamespaces:
   - kube-system
   - kube-public
   - default
 ```
 
-### Build & Deploy
-
-#### Image Build (AMD64)
-
+To update configuration on a running cluster:
 ```bash
-GOOS=linux GOARCH=amd64 go build -o operator-amd64 ./
-docker build -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1 .
-docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1
+helm upgrade auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
+  --namespace auto-observe
 ```
 
-#### Multi-arch image build
+---
 
-If you need images that can be pulled on both amd64 and arm64 clusters, build a multi-architecture manifest using `docker buildx` (recommended) or publish per-arch tags and combine them.
+## 🏗 Development & Build
 
-Quick `buildx` example (creates a manifest list and pushes to GHCR):
+Instructions for building the operator image manually.
+
+### Build Multi-Arch Image (AMD64 & ARM64)
+Use `docker buildx` to create a manifest for multiple architectures.
 
 ```bash
-# create a builder (only once)
-docker buildx create --name mybuilder --use || docker buildx inspect --bootstrap
+# Ensure buildx is ready
+docker buildx create --use || true
 
-# build and push for amd64+arm64
+# Build and push
 docker buildx build --platform linux/amd64,linux/arm64 \
   -f Dockerfile.amd64 \
   -t ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4 \
   --push .
 ```
 
-Alternate: tag and push per-arch images, then create a manifest list:
-
-```bash
-# push arm64 variant (if already available)
-docker tag ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.2 ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4-arm64
-docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4-arm64
-
-# build and push amd64 variant
-docker buildx build --platform linux/amd64 -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4-amd64 --push .
-
-# combine into one multi-arch tag
-docker buildx imagetools create --tag ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4 \
-  ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4-amd64 \
-  ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4-arm64
-```
-
-GitHub Actions example (minimal):
-
-```yaml
-name: Build and push multi-arch image
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Login to GHCR
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v4
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4
-```
-
-
-#### Helm Upgrade
-
-```bash
-helm upgrade --install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe \
-  --set image.tag=0.0.4
-# auto-ns-opentelemetry-instrumentation
-
-**[English](#english) | [Türkçe](#türkçe)**
-
----
-
-## Türkçe
-
-### Nedir?
-
-Kubernetes namespace'lerini otomatik olarak izleyen ve `apm-observe=true` etiketine sahip namespace'lere OpenTelemetry Instrumentation kaynağını uygulayan bir operatördür.
-
-### Kullanım
-
-#### 1. Kurulum
-
-```bash
-kubectl create namespace auto-observe
-helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation --namespace auto-observe
-```
-
-#### 2. Namespace'i Etikitle
-
-```bash
-kubectl create namespace my-app
-kubectl label namespace my-app apm-observe=true
-```
-
-Instrumentation otomatik olarak uygulanacaktır:
-
-```bash
-kubectl get instrumentation -n my-app
-```
-
-### Konfigürasyon
-
-Instrumentation'ın env değerlerini `charts/auto-ns-opentelemetry-instrumentation/values.yaml` dosyasında düzenle:
-
-```yaml
-instrumentation:
-  exporter:
-    endpoint: "http://collector.svc:4318"
-  env:
-    - name: OTEL_LOGS_EXPORTER
-      value: "otlp"
-  java:
-    env:
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: "http://collector.svc:4318"
-```
-
-Yoksayılacak namespace'leri ayarla:
-
-```yaml
-ignoreNamespaces:
-  - kube-system
-  - kube-public
-  - default
-```
-
-### Build & Deploy
-
-#### Image Build (AMD64)
+### Simple AMD64 Build
 
 ```bash
 GOOS=linux GOARCH=amd64 go build -o operator-amd64 ./
-docker build -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1 .
-docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1
+docker build -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4 .
+docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.4
 ```
 
-#### Helm Upgrade
+---
 
-```bash
-helm upgrade --install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe \
-  --set image.tag=0.0.4
-```
+## 🔍 Troubleshooting
 
-### Debug
-
-Operator logları:
-
+**Check Operator Logs:**
 ```bash
 kubectl -n auto-observe logs -l app=auto-ns-opentelemetry-instrumentation -f
 ```
 
----
-
-## SigNoz Entegrasyonu (Türkçe)
-
-Aşağıdaki adımlar SigNoz platformunu cluster ortamınıza kurmak ve OpenTelemetry bileşenlerini hazırlamak içindir.
-
-1) Cert-Manager kurun:
-
-```bash
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
-```
-
-2) OpenTelemetry Operator'u kurun:
-
-```bash
-helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-helm repo update
-helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
-  --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
-  --namespace opentelemetry-operator-system --create-namespace
-```
-
-3) SigNoz platform namespace'i oluşturun ve SigNoz'u yükleyin (values dosyası repo içindeki `signoz/signoz-values.yaml`):
-
-```bash
-kubectl create namespace platform
-helm repo add signoz https://charts.signoz.io || true
-helm repo update
-helm install dmsignoz signoz/signoz -n platform -f signoz/signoz-values.yaml
-```
-
-4) Doğrulama:
-
+**Check Platform Status:**
 ```bash
 kubectl -n platform get pods
 kubectl -n opentelemetry-operator-system get pods
 ```
-
-Not: `signoz/signoz-values.yaml` dosyası repository kökünde `signoz/` klasöründe bulunur. Gerekli endpoint/secret ayarlarını bu dosyada düzenleyin.
-
----
-
-## English
-
-### What is it?
-
-A Kubernetes operator that automatically watches namespaces and applies OpenTelemetry Instrumentation resources to namespaces labeled with `apm-observe=true`.
-
-### Usage
-
-#### 1. Install
-
-```bash
-kubectl create namespace auto-observe
-helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation --namespace auto-observe
-```
-
-#### 2. Label Namespace
-
-```bash
-kubectl create namespace my-app
-kubectl label namespace my-app apm-observe=true
-```
-
-Instrumentation will be applied automatically:
-
-```bash
-kubectl get instrumentation -n my-app
-```
-
-### Configuration
-
-Edit instrumentation env values in `charts/auto-ns-opentelemetry-instrumentation/values.yaml`:
-
-```yaml
-instrumentation:
-  exporter:
-    endpoint: "http://collector.svc:4318"
-  env:
-    - name: OTEL_LOGS_EXPORTER
-      value: "otlp"
-  java:
-    env:
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: "http://collector.svc:4318"
-```
-
-Set namespaces to ignore:
-
-```yaml
-ignoreNamespaces:
-  - kube-system
-  - kube-public
-  - default
-```
-
-### Build & Deploy
-
-#### Image Build (AMD64)
-
-```bash
-GOOS=linux GOARCH=amd64 go build -o operator-amd64 ./
-docker build -f Dockerfile.amd64 -t ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1 .
-docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1
-```
-
-#### Helm Upgrade
-
-```bash
-helm upgrade --install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe \
-  --set image.tag=0.0.4
-```
-
-### SigNoz Integration (English)
-
-The following steps install SigNoz and prepare OpenTelemetry components on your cluster.
-
-1) Install cert-manager:
-
-```bash
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
-```
-
-2) Install OpenTelemetry Operator:
-
-```bash
-helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-helm repo update
-helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
-  --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
-  --namespace opentelemetry-operator-system --create-namespace
-```
-
-3) Create the platform namespace and install SigNoz (values file is under `signoz/signoz-values.yaml` in this repo):
-
-```bash
-kubectl create namespace platform
-helm repo add signoz https://charts.signoz.io || true
-helm repo update
-helm install dmsignoz signoz/signoz -n platform -f signoz/signoz-values.yaml
-```
-
-4) Verify installations:
-
-```bash
-kubectl -n platform get pods
-kubectl -n opentelemetry-operator-system get pods
-```
-
-Note: `signoz/signoz-values.yaml` is located under the `signoz/` directory in this repository. Edit exporter endpoints and secrets in that values file before installing.
