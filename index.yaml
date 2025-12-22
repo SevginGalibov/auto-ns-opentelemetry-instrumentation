@@ -1,0 +1,20 @@
+apiVersion: v1
+entries:
+  auto-ns-opentelemetry-instrumentation:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2025-12-22T16:26:00.274347+03:00"
+    description: Operator to apply instrumentation into namespaces labeled apm-observe=true
+    digest: 5829585f5d9aefaf4a559a886a1d0a33993173110faf9eb21d82103dfa9b0d68
+    home: https://github.com/SevginGalibov/auto-ns-opentelemetry-instrumentation
+    maintainers:
+    - email: sevgin@example.com
+      name: SevginGalibov
+    name: auto-ns-opentelemetry-instrumentation
+    sources:
+    - https://github.com/SevginGalibov/auto-ns-opentelemetry-instrumentation
+    type: application
+    urls:
+    - https://sevgingalibov.github.io/auto-ns-opentelemetry-instrumentation/auto-ns-opentelemetry-instrumentation-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-12-22T16:26:00.273179+03:00"
