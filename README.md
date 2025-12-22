@@ -94,6 +94,17 @@ The operator will automatically detect the label and create the resource:
 kubectl -n my-app get instrumentation
 ```
 
+### 3. Annotate Your Workloads
+
+Finally, simply add the language-specific annotation to your Pods or Deployments. The OpenTelemetry Operator will detect this and inject the agent automatically.
+
+```bash
+Language	Annotation
+.NET	instrumentation.opentelemetry.io/inject-dotnet: "true"
+Java	instrumentation.opentelemetry.io/inject-java: "true"
+Node.js	instrumentation.opentelemetry.io/inject-nodejs: "true"
+Python	instrumentation.opentelemetry.io/inject-python: "true"
+```
 ---
 
 ## ⚙️ Configuration
