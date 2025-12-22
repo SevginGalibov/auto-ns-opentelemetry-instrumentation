@@ -1,11 +1,11 @@
 global:
-  storageClass: "longhorn"
+  storageClass: "nfs-client"
 clickhouse:
   enabled: true
   installCustomStorageClass: false
   persistence:
     enabled: true
-    storageClass: "longhorn"
+    storageClass: "nfs-client"
     size: 50Gi  # Increased for better trace retention in production
   extraEnv:
     - name: CLICKHOUSE_TRACE_RETENTION_PERIOD
