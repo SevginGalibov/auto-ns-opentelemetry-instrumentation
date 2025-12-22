@@ -65,7 +65,7 @@ A) Yerel chart (mevcut repo içindeki `charts/` dizininden):
 
 ```bash
 helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe --create-namespace --set image.tag=0.0.1
+  --namespace auto-observe --create-namespace --set image.tag=0.0.4
 ```
 
 B) Yayınlanmış Helm repo üzerinden (ör. GitHub Pages `gh-pages` kullanıyorsanız):
@@ -74,7 +74,7 @@ B) Yayınlanmış Helm repo üzerinden (ör. GitHub Pages `gh-pages` kullanıyor
 helm repo add sevgingalibov https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/
 helm repo update
 helm install auto-ns-opentelemetry-instrumentation sevgingalibov/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe --create-namespace --set image.tag=0.0.1
+  --namespace auto-observe --create-namespace --set image.tag=0.0.4
 ```
 
 # Label a test namespace to trigger instrumentation
@@ -143,7 +143,7 @@ A) Local chart (install from the `charts/` directory in this repository):
 
 ```bash
 helm install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe --create-namespace --set image.tag=0.0.1
+  --namespace auto-observe --create-namespace --set image.tag=0.0.4
 ```
 
 B) From published Helm repo (e.g. GitHub Pages `gh-pages`):
@@ -152,7 +152,7 @@ B) From published Helm repo (e.g. GitHub Pages `gh-pages`):
 helm repo add sevgingalibov https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/
 helm repo update
 helm install auto-ns-opentelemetry-instrumentation sevgingalibov/auto-ns-opentelemetry-instrumentation \
-  --namespace auto-observe --create-namespace --set image.tag=0.0.1
+  --namespace auto-observe --create-namespace --set image.tag=0.0.4
 ```
 
 # Label a namespace to apply instrumentation
@@ -312,7 +312,7 @@ jobs:
 ```bash
 helm upgrade --install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
   --namespace auto-observe \
-  --set image.tag=0.0.1
+  --set image.tag=0.0.4
 # auto-ns-opentelemetry-instrumentation
 
 **[English](#english) | [Türkçe](#türkçe)**
@@ -388,7 +388,7 @@ docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1
 ```bash
 helm upgrade --install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
   --namespace auto-observe \
-  --set image.tag=0.0.1
+  --set image.tag=0.0.4
 ```
 
 ### Debug
@@ -510,7 +510,7 @@ docker push ghcr.io/<user>/auto-ns-opentelemetry-instrumentation:0.0.1
 ```bash
 helm upgrade --install auto-ns-opentelemetry-instrumentation charts/auto-ns-opentelemetry-instrumentation \
   --namespace auto-observe \
-  --set image.tag=0.0.1
+  --set image.tag=0.0.4
 ```
 
 ### SigNoz Integration (English)
