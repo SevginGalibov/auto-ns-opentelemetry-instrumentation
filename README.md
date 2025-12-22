@@ -15,17 +15,16 @@ A lightweight Kubernetes operator that automates the injection of OpenTelemetry 
 Before installing the operator, ensure your cluster has the necessary monitoring stack dependencies. Follow this order:
 
 ### 1. Install Cert-Manager
-Required for the OpenTelemetry Operator.
+Required for the OpenTelemetry Operator..
 
 ```bash
-kubectl apply -f [https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml](https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml)
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
 ```
 
 ### 2. Install OpenTelemetry Operator
 
 ```bash
-helm repo add open-telemetry [https://open-telemetry.github.io/opentelemetry-helm-charts](https://open-telemetry.github.io/opentelemetry-helm-charts)
-helm repo update
+helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 
 helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
   --set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
@@ -39,7 +38,7 @@ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
 
 ```bash
 kubectl create namespace platform
-helm repo add signoz [https://charts.signoz.io](https://charts.signoz.io) || true
+helm repo add signoz https://charts.signoz.io || true
 helm repo update
 
 # Install using the custom values file included in this repo
@@ -56,7 +55,7 @@ You can install the auto-instrumentation operator via the Helm repository (recom
 
 ```bash
 kubectl create namespace auto-observe
-helm repo add sevgingalibov [https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/](https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/)
+helm repo add sevgingalibov https://SevginGalibov.github.io/auto-ns-opentelemetry-instrumentation/
 helm repo update
 
 helm install auto-ns-opentelemetry-instrumentation sevgingalibov/auto-ns-opentelemetry-instrumentation \
@@ -106,14 +105,14 @@ You can customize the instrumentation settings (e.g., OTLP endpoints or ignored 
 ```yaml
 instrumentation:
   exporter:
-    endpoint: "[http://dmsignoz-otel-collector.platform.svc:4318](http://dmsignoz-otel-collector.platform.svc:4318)"
+    endpoint: "http://dmsignoz-otel-collector.platform.svc:4318"
   env:
     - name: OTEL_LOGS_EXPORTER
       value: "otlp"
   java:
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: "[http://dmsignoz-otel-collector.platform.svc:4318](http://dmsignoz-otel-collector.platform.svc:4318)"
+        value: "http://dmsignoz-otel-collector.platform.svc:4318"
 
 # Namespaces to explicitly ignore (even if labeled)
 ignoreNamespaces:
