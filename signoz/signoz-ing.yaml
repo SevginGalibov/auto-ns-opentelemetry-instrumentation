@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dm-signoz-ingress
+  namespace: platform
+  annotations:
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: dm-signoz.sevgin.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dmsignoz
+                port:
+                  number: 8080
